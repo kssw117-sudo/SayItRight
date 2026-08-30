@@ -118,6 +118,24 @@ function PersonBubbleMark({ size = 160 }) {
   );
 }
 
+// Декоративная иконка: голова в профиль + звуковые волны изо рта.
+// Используется как анимированный "заполнитель" пустого пространства
+// на всех экранах приложения, вместо простых кружков.
+function ProfileSoundIcon({ size = 60, delay = '0s' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 90" style={{ overflow: 'visible' }}>
+      {/* Голова в профиль */}
+      <path
+        d="M32 18 C20 18 14 30 14 42 C14 52 18 58 22 62 L22 78 L30 78 L30 68 L40 68 C46 68 50 62 52 56"
+        stroke={BLUE} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"
+      />
+      {/* Звуковые волны, каждая пульсирует со своей задержкой */}
+      <path className="sound-arc arc-1" d="M60 38 Q68 46 60 54" stroke={INDIGO_BRIGHT} strokeWidth="6" strokeLinecap="round" fill="none" style={{ animationDelay: delay }} />
+      <path className="sound-arc arc-2" d="M70 30 Q84 46 70 62" stroke={INDIGO_BRIGHT} strokeWidth="6" strokeLinecap="round" fill="none" style={{ animationDelay: delay }} />
+    </svg>
+  );
+}
+
 export default function App() {
   const [licenseCode, setLicenseCode] = useState(() => localStorage.getItem('sir_licenseCode') || '');
   const [unlocked, setUnlocked] = useState(() => localStorage.getItem('sir_unlocked') === 'true');
@@ -217,6 +235,8 @@ Respond ONLY with valid JSON, no markdown, no code fences:
       50% { transform: translate(14px, -18px) rotate(6deg); }
     }
     .drift-shape { animation: driftShape 7s ease-in-out infinite; }
+    @keyframes soundArc { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 0.9; transform: scale(1.05); } }
+    .sound-arc { animation: soundArc 1.6s ease-in-out infinite; transform-origin: center; }
     @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     .float-person { animation: floatSlow 4.5s ease-in-out infinite; }
     @keyframes bgShift {
@@ -236,10 +256,10 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         <style>{sharedStyles}</style>
 
         {/* Декоративные плавающие фигуры, заполняют пустой фон */}
-        <div className="drift-shape" style={{ position: 'absolute', top: '8%', left: '8%', width: 60, height: 60, borderRadius: '50%', border: `2px solid ${INDIGO_BRIGHT}`, opacity: 0.25 }} />
-        <div className="drift-shape" style={{ position: 'absolute', bottom: '12%', right: '10%', width: 80, height: 80, borderRadius: '50%', border: `2px solid ${BLUE}`, opacity: 0.2, animationDelay: '1.5s' }} />
-        <div className="drift-shape" style={{ position: 'absolute', top: '20%', right: '15%', width: 34, height: 34, borderRadius: '50%', background: INDIGO_BRIGHT, opacity: 0.15, animationDelay: '3s' }} />
-        <div className="drift-shape" style={{ position: 'absolute', bottom: '22%', left: '12%', width: 24, height: 24, borderRadius: '50%', background: BLUE, opacity: 0.2, animationDelay: '2s' }} />
+        <div className="drift-shape" style={{ position: 'absolute', top: '8%', left: '6%', opacity: 0.45 }}><ProfileSoundIcon size={54} delay="0s" /></div>
+        <div className="drift-shape" style={{ position: 'absolute', bottom: '14%', right: '8%', opacity: 0.4, animationDelay: '1s' }}><ProfileSoundIcon size={70} delay="0.4s" /></div>
+        <div className="drift-shape" style={{ position: 'absolute', top: '24%', right: '10%', opacity: 0.35, animationDelay: '2s' }}><ProfileSoundIcon size={40} delay="0.8s" /></div>
+        <div className="drift-shape" style={{ position: 'absolute', bottom: '26%', left: '10%', opacity: 0.38, animationDelay: '0.5s' }}><ProfileSoundIcon size={46} delay="1.2s" /></div>
 
         <div className="w-full max-w-sm" style={{ position: 'relative', zIndex: 1 }}>
           <div className="flex justify-center mb-5"><PersonBubbleMark size={170} /></div>
@@ -311,12 +331,16 @@ Respond ONLY with valid JSON, no markdown, no code fences:
   }
 
   return (
-    <div className="bg-gradient-animated min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="bg-gradient-animated min-h-screen" style={{ fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
       <style>{sharedStyles}</style>
 
-      <div className="max-w-2xl mx-auto px-4 py-10">
+      <div className="drift-shape" style={{ position: 'absolute', top: '6%', left: '4%', opacity: 0.3 }}><ProfileSoundIcon size={44} delay="0s" /></div>
+      <div className="drift-shape" style={{ position: 'absolute', top: '40%', right: '5%', opacity: 0.26, animationDelay: '1.4s' }}><ProfileSoundIcon size={56} delay="0.6s" /></div>
+      <div className="drift-shape" style={{ position: 'absolute', bottom: '8%', left: '6%', opacity: 0.26, animationDelay: '0.7s' }}><ProfileSoundIcon size={38} delay="1s" /></div>
+
+      <div className="max-w-2xl mx-auto px-4 py-10" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex items-center gap-4 mb-8">
-          <div className="float-person"><TalkingPerson size={72} /></div>
+          <div><PersonBubbleMark size={90} /></div>
           <div>
             <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 26, color: INK }}>SayItRight AI</h1>
             <p style={{ fontSize: 13, color: INK_SOFT }}>Write naturally in English, explained in your own language.</p>
@@ -384,6 +408,22 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             {loading ? 'Writing...' : 'Rewrite it'}
           </button>
         </div>
+
+        {!result && (
+          <div className="grid grid-cols-2 gap-2.5 mb-5">
+            {[
+              { icon: '\u2699\ufe0f', label: 'Formality slider' },
+              { icon: '\ud83d\udcac', label: 'Native-language notes' },
+              { icon: '\ud83c\udfb5', label: 'Tone check' },
+              { icon: '\u2705', label: 'Spelling & punctuation' },
+            ].map((f, i) => (
+              <div key={i} className="rounded-xl p-3 text-center" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(12px)' }}>
+                <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
+                <div style={{ fontSize: 10.5, color: INK_SOFT, lineHeight: 1.3 }}>{f.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {result && (
           <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
