@@ -7,8 +7,9 @@ const LINE = 'rgba(255,255,255,0.12)';
 const INK = '#F3F1FF';
 const INK_SOFT = '#A9A3D9';
 const BLUE = '#4FA0FF';
-const INDIGO = '#7C6FEA';
-const INDIGO_DEEP = '#4C3B8C';
+const INDIGO = '#A78BFA';
+const INDIGO_BRIGHT = '#C4B5FD';
+const INDIGO_DEEP = '#6D5BD0';
 
 const FREE_TRIAL_LIMIT = 0;
 const DAILY_GEN_LIMIT = 50;
@@ -67,8 +68,8 @@ function TalkingPerson({ size = 150 }) {
           <stop offset="100%" stopColor={INDIGO_DEEP} />
         </linearGradient>
         <radialGradient id="glowGrad" cx="50%" cy="45%" r="55%">
-          <stop offset="0%" stopColor={BLUE} stopOpacity="0.35" />
-          <stop offset="100%" stopColor={BLUE} stopOpacity="0" />
+          <stop offset="0%" stopColor={INDIGO_BRIGHT} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={INDIGO_BRIGHT} stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -84,8 +85,34 @@ function TalkingPerson({ size = 150 }) {
       <ellipse className="talking-mouth" cx="80" cy="86" rx="10" ry="3.5" fill="#FFFFFF" />
       <g transform="translate(122, 60)">
         <rect className="eq-bar eq-1" x="0" y="10" width="4" height="10" rx="2" fill={BLUE} />
-        <rect className="eq-bar eq-2" x="8" y="4" width="4" height="22" rx="2" fill={INDIGO} />
+        <rect className="eq-bar eq-2" x="8" y="4" width="4" height="22" rx="2" fill={INDIGO_BRIGHT} />
         <rect className="eq-bar eq-3" x="16" y="8" width="4" height="14" rx="2" fill={BLUE} />
+      </g>
+    </svg>
+  );
+}
+
+// Иконка-логотип в стиле контурного человечка + пузырь с текстом ---
+// светлые линии для тёмной темы, с лёгкой анимацией пульсации пузыря
+function PersonBubbleMark({ size = 160 }) {
+  return (
+    <svg width={size} height={size * 0.8} viewBox="0 0 400 320" fill="none">
+      <defs>
+        <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={BLUE} />
+          <stop offset="100%" stopColor={INDIGO_BRIGHT} />
+        </linearGradient>
+      </defs>
+      {/* Человек внизу слева: отдельная голова + отдельные плечи, без наложений */}
+      <circle cx="95" cy="195" r="38" stroke="url(#markGrad)" strokeWidth="14" fill="none" />
+      <path d="M30 300 Q30 240 95 240 Q160 240 160 300" stroke="url(#markGrad)" strokeWidth="14" strokeLinecap="round" fill="none" />
+
+      {/* Пузырь речи справа сверху — не пересекается с человеком */}
+      <g className="bubble-pulse" style={{ transformOrigin: '280px 110px' }}>
+        <ellipse cx="280" cy="110" rx="110" ry="88" stroke="url(#markGrad)" strokeWidth="14" fill="none" />
+        <path d="M195 175 L165 215 L205 182" stroke="url(#markGrad)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <text x="280" y="100" textAnchor="middle" fontFamily="'Fraunces', serif" fontWeight="600" fontSize="30" fill={INK}>Say It</text>
+        <text x="280" y="134" textAnchor="middle" fontFamily="'Fraunces', serif" fontWeight="600" fontSize="30" fill={INK}>Right</text>
       </g>
     </svg>
   );
@@ -103,6 +130,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [showSupportEmail, setShowSupportEmail] = useState(false);
 
   function handleUnlock() {
     if (!licenseCode.trim()) {
@@ -140,8 +168,8 @@ Desired formality: ${formalityLabel}
 Their draft (may be in their native language, broken English, or a mix): "${inputText}"
 
 Do the following:
-1. Rewrite it as natural, professional English matching the requested formality and message type.
-2. List 2-4 specific changes you made, each explained BRIEFLY in ${nativeLangLabel} (not English), so the person learns from it.
+1. Rewrite it as natural, professional English matching the requested formality and message type. Fix all spelling, grammar, and punctuation errors as part of this.
+2. List 2-4 specific changes you made, each explained BRIEFLY in ${nativeLangLabel} (not English), so the person learns from it. Include spelling/punctuation fixes among these if relevant.
 3. If the original phrasing could come across as too blunt to an English-speaking reader, add a short tone note in English. If tone is already fine, omit this.
 4. Give one short English tip specific to common mistakes made by ${nativeLangLabel} speakers -- written in ${nativeLangLabel}.
 
@@ -182,6 +210,13 @@ Respond ONLY with valid JSON, no markdown, no code fences:
     .eq-3 { animation-delay: 0.4s; }
     @keyframes glowPulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
     .glow-pulse { animation: glowPulse 3s ease-in-out infinite; transform-origin: 80px 78px; }
+    @keyframes bubblePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+    .bubble-pulse { animation: bubblePulse 2.6s ease-in-out infinite; }
+    @keyframes driftShape {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(14px, -18px) rotate(6deg); }
+    }
+    .drift-shape { animation: driftShape 7s ease-in-out infinite; }
     @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     .float-person { animation: floatSlow 4.5s ease-in-out infinite; }
     @keyframes bgShift {
@@ -197,10 +232,17 @@ Respond ONLY with valid JSON, no markdown, no code fences:
 
   if (!unlocked) {
     return (
-      <div className="bg-gradient-animated min-h-screen flex items-center justify-center px-4 py-10" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="bg-gradient-animated min-h-screen flex items-center justify-center px-4 py-10" style={{ fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
         <style>{sharedStyles}</style>
-        <div className="w-full max-w-sm">
-          <div className="float-person flex justify-center mb-5"><TalkingPerson size={130} /></div>
+
+        {/* Декоративные плавающие фигуры, заполняют пустой фон */}
+        <div className="drift-shape" style={{ position: 'absolute', top: '8%', left: '8%', width: 60, height: 60, borderRadius: '50%', border: `2px solid ${INDIGO_BRIGHT}`, opacity: 0.25 }} />
+        <div className="drift-shape" style={{ position: 'absolute', bottom: '12%', right: '10%', width: 80, height: 80, borderRadius: '50%', border: `2px solid ${BLUE}`, opacity: 0.2, animationDelay: '1.5s' }} />
+        <div className="drift-shape" style={{ position: 'absolute', top: '20%', right: '15%', width: 34, height: 34, borderRadius: '50%', background: INDIGO_BRIGHT, opacity: 0.15, animationDelay: '3s' }} />
+        <div className="drift-shape" style={{ position: 'absolute', bottom: '22%', left: '12%', width: 24, height: 24, borderRadius: '50%', background: BLUE, opacity: 0.2, animationDelay: '2s' }} />
+
+        <div className="w-full max-w-sm" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="flex justify-center mb-5"><PersonBubbleMark size={170} /></div>
           <div className="text-center mb-6">
             <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 28, color: INK, marginBottom: 10 }}>
               SayItRight AI
@@ -231,9 +273,37 @@ Respond ONLY with valid JSON, no markdown, no code fences:
               No code? Get access
             </a>
           </div>
-          <div className="flex justify-center gap-4 mt-6">
+
+          {/* Блок с четырьмя функциями — заполняет пространство и объясняет, что умеет продукт */}
+          <div className="grid grid-cols-2 gap-2.5 mt-6">
+            {[
+              { icon: '\u2699\ufe0f', label: 'Formality slider' },
+              { icon: '\ud83d\udcac', label: 'Native-language notes' },
+              { icon: '\ud83c\udfb5', label: 'Tone check' },
+              { icon: '\u2705', label: 'Spelling & punctuation' },
+            ].map((f, i) => (
+              <div key={i} className="rounded-xl p-3 text-center" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(12px)' }}>
+                <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
+                <div style={{ fontSize: 10.5, color: INK_SOFT, lineHeight: 1.3 }}>{f.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center gap-4 mt-6 mb-2">
             <a href="/terms.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Terms of Service</a>
             <a href="/privacy.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Privacy Policy</a>
+          </div>
+          <div className="flex justify-center">
+            {!showSupportEmail ? (
+              <button
+                onClick={() => setShowSupportEmail(true)}
+                style={{ fontSize: 11, color: BLUE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+              >
+                Support
+              </button>
+            ) : (
+              <a href="mailto:kssw117@gmail.com" style={{ fontSize: 11, color: BLUE }}>kssw117@gmail.com</a>
+            )}
           </div>
         </div>
       </div>
@@ -360,6 +430,18 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           <div className="flex gap-4 mt-1">
             <a href="/terms.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Terms of Service</a>
             <a href="/privacy.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Privacy Policy</a>
+          </div>
+          <div className="mt-1">
+            {!showSupportEmail ? (
+              <button
+                onClick={() => setShowSupportEmail(true)}
+                style={{ fontSize: 11, color: BLUE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+              >
+                Support
+              </button>
+            ) : (
+              <a href="mailto:kssw117@gmail.com" style={{ fontSize: 11, color: BLUE }}>kssw117@gmail.com</a>
+            )}
           </div>
         </div>
       </div>
