@@ -138,6 +138,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [speaking, setSpeaking] = useState(false);
   const [showSupportEmail, setShowSupportEmail] = useState(false);
 
   function handleUnlock() {
@@ -149,6 +151,22 @@ export default function App() {
     localStorage.setItem('sir_unlocked', 'true');
     setUnlocked(true);
     setLicenseError('');
+  }
+
+  function handleSpeak(text, lang) {
+    if (!window.speechSynthesis) return;
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang || 'en-US';
+    utter.rate = 0.95;
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    setSpeaking(true);
+    window.speechSynthesis.speak(utter);
   }
 
   async function handleGenerate() {
@@ -210,6 +228,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         parsed = { rewritten: data.result || data.content, changes: [], toneNote: null, commonMistakeTip: '' };
       }
       setResult(parsed);
+      setHistory(h => [{ text: parsed.rewritten, lang: targetLang, time: Date.now() }, ...h].slice(0, 5));
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -476,21 +495,29 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
             <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
               <div style={{ fontSize: 12, color: BLUE, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Your English text
+                Your text
               </div>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(result.rewritten);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 1800);
-                }}
-                style={{
-                  fontSize: 11, color: copied ? '#7CE0A0' : BLUE, background: 'none', border: 'none',
-                  cursor: 'pointer', fontWeight: 600,
-                }}
-              >
-                {copied ? '\u2713 Copied' : 'Copy'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleSpeak(result.rewritten, targetLang)}
+                  style={{ fontSize: 11, color: speaking ? INDIGO : BLUE, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  {speaking ? '\u23f9 Stop' : '\ud83d\udd0a Listen'}
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(result.rewritten);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1800);
+                  }}
+                  style={{
+                    fontSize: 11, color: copied ? '#7CE0A0' : BLUE, background: 'none', border: 'none',
+                    cursor: 'pointer', fontWeight: 600,
+                  }}
+                >
+                  {copied ? '\u2713 Copied' : 'Copy'}
+                </button>
+              </div>
             </div>
             <p style={{ fontSize: 15, color: INK, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: 20 }}>
               {result.rewritten}
@@ -523,6 +550,25 @@ Respond ONLY with valid JSON, no markdown, no code fences:
                 <p style={{ fontSize: 13, color: INK, lineHeight: 1.5 }}>{result.commonMistakeTip}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {history.length > 0 && (
+          <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
+            <div style={{ fontSize: 12, color: BLUE, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Recent
+            </div>
+            {history.map((h, i) => (
+              <div key={h.time} className="flex items-start justify-between gap-3" style={{ padding: '8px 0', borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>
+                <p style={{ fontSize: 13, color: INK_SOFT, lineHeight: 1.4, margin: 0, flex: 1 }}>{h.text}</p>
+                <button
+                  onClick={() => navigator.clipboard.writeText(h.text)}
+                  style={{ fontSize: 11, color: BLUE, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                >
+                  Copy
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
