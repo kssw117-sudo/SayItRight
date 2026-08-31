@@ -15,6 +15,18 @@ const FREE_TRIAL_LIMIT = 0;
 const DAILY_GEN_LIMIT = 50;
 const DAILY_GEN_KEY = 'sir_daily_gens';
 
+function getDailyCount() {
+  const today = new Date().toISOString().slice(0, 10);
+  let record;
+  try {
+    record = JSON.parse(localStorage.getItem(DAILY_GEN_KEY) || 'null');
+  } catch (e) {
+    record = null;
+  }
+  if (!record || record.date !== today) return 0;
+  return record.count;
+}
+
 function checkAndUseDailyLimit() {
   const today = new Date().toISOString().slice(0, 10);
   let record;
@@ -140,6 +152,7 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
   const [speaking, setSpeaking] = useState(false);
+  const [dailyCount, setDailyCount] = useState(() => getDailyCount());
   const [showSupportEmail, setShowSupportEmail] = useState(false);
 
   function handleUnlock() {
@@ -175,9 +188,10 @@ export default function App() {
       return;
     }
     if (!checkAndUseDailyLimit()) {
-      setError('Daily generation limit reached. Try again tomorrow.');
+      setDailyCount(DAILY_GEN_LIMIT);
       return;
     }
+    setDailyCount(getDailyCount());
     setError('');
     setLoading(true);
     setResult(null);
@@ -481,14 +495,35 @@ Respond ONLY with valid JSON, no markdown, no code fences:
 
           {error && <p className="text-sm mt-3" style={{ color: '#FF8A8A' }}>{error}</p>}
 
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="w-full font-medium py-2.5 rounded-lg text-sm mt-4"
-            style={{ background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`, color: '#FFFFFF', opacity: loading ? 0.7 : 1, boxShadow: `0 8px 24px rgba(79,160,255,0.3)` }}
-          >
-            {loading ? 'Writing...' : quickCheckOnly ? 'Check it' : 'Rewrite it'}
-          </button>
+          {dailyCount >= DAILY_GEN_LIMIT ? (
+            <div className="rounded-lg p-3 mt-4 text-center" style={{ background: 'rgba(255,138,138,0.1)', border: '1px solid rgba(255,138,138,0.3)' }}>
+              <p style={{ fontSize: 13, color: '#FF8A8A', margin: 0, fontWeight: 600 }}>Today's limit reached</p>
+              <p style={{ fontSize: 12, color: INK_SOFT, margin: '4px 0 0' }}>Come back tomorrow for 50 more free generations.</p>
+            </div>
+          ) : (
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="w-full font-medium py-2.5 rounded-lg text-sm mt-4"
+              style={{ background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`, color: '#FFFFFF', opacity: loading ? 0.7 : 1, boxShadow: `0 8px 24px rgba(79,160,255,0.3)` }}
+            >
+              {loading ? 'Writing...' : quickCheckOnly ? 'Check it' : 'Rewrite it'}
+            </button>
+          )}
+
+          <div className="mt-3">
+            <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
+              <span style={{ fontSize: 10.5, color: INK_SOFT }}>Today's free generations</span>
+              <span style={{ fontSize: 10.5, color: INK_SOFT, fontWeight: 600 }}>{DAILY_GEN_LIMIT - dailyCount}/{DAILY_GEN_LIMIT} left</span>
+            </div>
+            <div style={{ height: 4, borderRadius: 999, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 999, width: `${(dailyCount / DAILY_GEN_LIMIT) * 100}%`,
+                background: dailyCount >= DAILY_GEN_LIMIT ? '#FF8A8A' : `linear-gradient(90deg, ${BLUE}, ${INDIGO})`,
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+          </div>
         </div>
 
         {result && (
@@ -574,7 +609,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
 
         <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
           <span className="text-xs" style={{ color: INK_SOFT }}>Powered by Claude &middot; Plainwork by Ksenia</span>
-          <span className="text-xs" style={{ color: INK_SOFT, opacity: 0.7 }}>Fair use: up to 50 generations per day</span>
+
           <div className="flex gap-4 mt-1">
             <a href="/terms.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Terms of Service</a>
             <a href="/privacy.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Privacy Policy</a>
