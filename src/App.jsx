@@ -136,6 +136,7 @@ function TextBubble({ size = 100 }) {
 export default function App() {
   const [licenseCode, setLicenseCode] = useState(() => localStorage.getItem('sir_licenseCode') || '');
   const [unlocked, setUnlocked] = useState(() => localStorage.getItem('sir_unlocked') === 'true');
+  const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('sir_free_trial_used') === 'true');
   const [licenseError, setLicenseError] = useState('');
 
   const [inputText, setInputText] = useState('');
@@ -154,6 +155,7 @@ export default function App() {
   const [speaking, setSpeaking] = useState(false);
   const [dailyCount, setDailyCount] = useState(() => getDailyCount());
   const [showSupportEmail, setShowSupportEmail] = useState(false);
+  const [showHowTo, setShowHowTo] = useState(false);
 
   function handleUnlock() {
     if (!licenseCode.trim()) {
@@ -187,11 +189,18 @@ export default function App() {
       setError('Paste or type your message first.');
       return;
     }
-    if (!checkAndUseDailyLimit()) {
-      setDailyCount(DAILY_GEN_LIMIT);
+    if (!unlocked && freeTrialUsed) {
+      setError('Free preview used. Enter your access code to continue.');
       return;
     }
-    setDailyCount(getDailyCount());
+    const isTrial = !unlocked && !freeTrialUsed;
+    if (!isTrial) {
+      if (!checkAndUseDailyLimit()) {
+        setDailyCount(DAILY_GEN_LIMIT);
+        return;
+      }
+      setDailyCount(getDailyCount());
+    }
     setError('');
     setLoading(true);
     setResult(null);
@@ -231,10 +240,14 @@ Respond ONLY with valid JSON, no markdown, no code fences:
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ licenseCode, content: prompt }),
+        body: JSON.stringify({ licenseCode, content: prompt, trial: isTrial }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
+      if (isTrial) {
+        localStorage.setItem('sir_free_trial_used', 'true');
+        setFreeTrialUsed(true);
+      }
       let parsed;
       try {
         parsed = JSON.parse(data.result || data.content || '{}');
@@ -275,87 +288,6 @@ Respond ONLY with valid JSON, no markdown, no code fences:
     }
   `;
 
-  if (!unlocked) {
-    return (
-      <div className="bg-gradient-animated min-h-screen flex items-center justify-center px-4 py-10" style={{ fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
-        <style>{sharedStyles}</style>
-
-        {/* Декоративные плавающие фигуры, заполняют пустой фон */}
-        <div className="drift-shape" style={{ position: 'absolute', top: '8%', left: '6%', opacity: 0.45 }}><ProfileSoundIcon size={54} delay="0s" /></div>
-        <div className="drift-shape" style={{ position: 'absolute', bottom: '14%', right: '8%', opacity: 0.4, animationDelay: '1s' }}><ProfileSoundIcon size={70} delay="0.4s" /></div>
-        <div className="drift-shape" style={{ position: 'absolute', top: '24%', right: '10%', opacity: 0.35, animationDelay: '2s' }}><ProfileSoundIcon size={40} delay="0.8s" /></div>
-        <div className="drift-shape" style={{ position: 'absolute', bottom: '26%', left: '10%', opacity: 0.38, animationDelay: '0.5s' }}><ProfileSoundIcon size={46} delay="1.2s" /></div>
-
-        <div className="w-full max-w-sm" style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ position: 'relative', width: 200, height: 190, margin: '0 auto 24px' }}>
-            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }}><TalkingPerson size={110} /></div>
-            <div style={{ position: 'absolute', top: 0, right: 0 }}><TextBubble size={110} /></div>
-          </div>
-          <div className="text-center mb-6">
-            <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 28, color: INK, marginBottom: 10 }}>
-              SayItRight AI
-            </h1>
-            <p style={{ fontSize: 14, color: INK_SOFT, lineHeight: 1.6 }}>
-              Write in your own language. Get natural, professional English -- with explanations of every change.
-              Enter your access code below, or <a href="/buy.html" style={{ color: BLUE, textDecoration: 'underline' }}>get one here</a>.
-            </p>
-          </div>
-          <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
-            <input
-              type="text"
-              value={licenseCode}
-              onChange={(e) => setLicenseCode(e.target.value)}
-              placeholder="Enter your access code"
-              className="w-full rounded-lg px-3 py-2.5 text-sm mb-3 focus:outline-none"
-              style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${LINE}`, color: INK }}
-            />
-            {licenseError && <p className="text-sm mb-3" style={{ color: '#FF8A8A' }}>{licenseError}</p>}
-            <button
-              onClick={handleUnlock}
-              className="w-full font-medium py-2.5 rounded-lg text-sm"
-              style={{ background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`, color: '#FFFFFF', boxShadow: `0 8px 24px rgba(79,160,255,0.35)` }}
-            >
-              Unlock
-            </button>
-            <a href="/buy.html" className="block text-center text-xs mt-4" style={{ color: BLUE }}>
-              No code? Get access
-            </a>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5 mt-6">
-            {[
-              { icon: '\u2699\ufe0f', label: 'Formality slider' },
-              { icon: '\ud83d\udcac', label: 'Native-language notes' },
-              { icon: '\ud83c\udfb5', label: 'Tone check' },
-              { icon: '\u2705', label: 'Spelling & punctuation' },
-            ].map((f, i) => (
-              <div key={i} className="rounded-xl p-3 text-center" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(12px)' }}>
-                <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
-                <div style={{ fontSize: 10.5, color: INK_SOFT, lineHeight: 1.3 }}>{f.label}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center gap-4 mt-6 mb-2">
-            <a href="/terms.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Terms of Service</a>
-            <a href="/privacy.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Privacy Policy</a>
-          </div>
-          <div className="flex justify-center">
-            {!showSupportEmail ? (
-              <button
-                onClick={() => setShowSupportEmail(true)}
-                style={{ fontSize: 11, color: BLUE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
-              >
-                Support
-              </button>
-            ) : (
-              <a href="mailto:kssw117@gmail.com" style={{ fontSize: 11, color: BLUE }}>kssw117@gmail.com</a>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-gradient-animated min-h-screen" style={{ fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
@@ -373,6 +305,69 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             <p style={{ fontSize: 13, color: INK_SOFT }}>Write naturally in English, explained in your own language.</p>
           </div>
         </div>
+
+        <button
+          onClick={() => setShowHowTo(!showHowTo)}
+          className="w-full flex items-center justify-between rounded-lg px-4 py-2.5 mb-5 text-sm"
+          style={{ background: CARD, border: `1px solid ${LINE}`, color: INK, cursor: 'pointer' }}
+        >
+          <span>❓ How to use SayItRight AI</span>
+          <span style={{ transform: showHowTo ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+        </button>
+        {showHowTo && (
+          <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
+            {[
+              { n: '1', title: 'Paste your message', body: 'Type or paste what you want to say — in your own language, or in rough English. It works either way.' },
+              { n: '2', title: 'Pick your languages', body: 'Choose your native language and the language you want to write in. Use the swap button (⇄) to switch them anytime, like a translator.' },
+              { n: '3', title: 'Set the tone', body: 'Drag the formality slider from Casual to Very formal, and pick the message type (email, social post, etc.) to match the situation.' },
+              { n: '4', title: 'Rewrite or Quick check', body: 'Hit "Rewrite it" for a full polish, or switch on "Quick check" if you just want spelling and grammar fixed without changing your wording.' },
+              { n: '5', title: 'Learn from the notes', body: 'Every result comes with a plain-language explanation of what changed and why — written in your own language, so you actually learn for next time.' },
+              { n: '6', title: 'Listen or copy', body: 'Hit 🔊 Listen to hear how it sounds out loud, or Copy to paste it straight into your email or message.' },
+            ].map((step) => (
+              <div key={step.n} className="flex gap-3" style={{ marginBottom: 14 }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%', border: `1px solid ${BLUE}`, color: BLUE,
+                  fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>{step.n}</div>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 2 }}>{step.title}</div>
+                  <div style={{ fontSize: 12.5, color: INK_SOFT, lineHeight: 1.5 }}>{step.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!unlocked && (
+          <div className="rounded-lg p-3 mb-5" style={{ background: freeTrialUsed ? 'rgba(255,138,138,0.1)' : 'rgba(79,160,255,0.1)', border: `1px solid ${freeTrialUsed ? 'rgba(255,138,138,0.3)' : 'rgba(79,160,255,0.3)'}` }}>
+            {freeTrialUsed ? (
+              <>
+                <p className="text-sm" style={{ color: '#FF8A8A', margin: 0, fontWeight: 600 }}>Free preview used</p>
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={licenseCode}
+                    onChange={(e) => setLicenseCode(e.target.value)}
+                    placeholder="Enter your access code"
+                    className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${LINE}`, color: INK }}
+                  />
+                  <button
+                    onClick={handleUnlock}
+                    className="font-medium px-4 rounded-lg text-sm"
+                    style={{ background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`, color: '#FFFFFF' }}
+                  >
+                    Unlock
+                  </button>
+                </div>
+                {licenseError && <p className="text-sm mt-2" style={{ color: '#FF8A8A' }}>{licenseError}</p>}
+                <a href="/buy.html" className="block text-xs mt-2" style={{ color: BLUE }}>No code? Get access</a>
+              </>
+            ) : (
+              <p className="text-sm" style={{ color: '#8FBFFF', margin: 0 }}>✨ Try it free — your first generation is on us. No code needed.</p>
+            )}
+          </div>
+        )}
 
         <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
           <label style={{ fontSize: 12.5, color: INK_SOFT, fontWeight: 500, display: 'block', marginBottom: 6 }}>
