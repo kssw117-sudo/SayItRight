@@ -1,18 +1,21 @@
 // api/generate.js
 // Один код доступа хранится в переменной окружения ACCESS_CODE на Vercel.
 // AppSumo-коды (SIR-XXXX-XXXX) проверяются отдельно через GitHub-хранилище кодов.
+// trial: true — одна бесплатная генерация без кода, чтобы модераторы
+// маркетплейсов могли реально попробовать продукт.
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { licenseCode, content } = req.body || {};
+  const { licenseCode, content, trial } = req.body || {};
 
   const isSharedCode = licenseCode && licenseCode === process.env.ACCESS_CODE;
   const isAppSumoCode = licenseCode && licenseCode.startsWith('SIR-');
+  const isFreeTrial = trial === true;
 
-  if (!licenseCode || (!isSharedCode && !isAppSumoCode)) {
+  if (!isFreeTrial && (!licenseCode || (!isSharedCode && !isAppSumoCode))) {
     return res.status(403).json({ error: 'Invalid access code.' });
   }
 
