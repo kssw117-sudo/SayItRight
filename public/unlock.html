@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enter your code — SayItRight AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0; color: #F3F1FF;
+    font-family: -apple-system, sans-serif; line-height: 1.6;
+    position: relative; overflow-x: hidden;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(120deg, #0E0B26, #171040, #0E0B26, #10143A);
+    background-size: 300% 300%;
+    animation: bgShift 14s ease infinite;
+  }
+  @keyframes bgShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes floatBubble {
+    0%   { transform: translate(0, 0) rotate(-6deg); }
+    50%  { transform: translate(16px, -24px) rotate(4deg); }
+    100% { transform: translate(0, 0) rotate(-6deg); }
+  }
+  .floating-bubble { position: absolute; pointer-events: none; animation: floatBubble 7s ease-in-out infinite; opacity: 0.35; }
+  .fb1 { top: 8%; right: 7%; width: 80px; animation-duration: 8s; }
+  .fb2 { bottom: 10%; left: 6%; width: 54px; animation-duration: 6s; animation-delay: -3s; }
+
+  .wrap { max-width: 400px; width: 100%; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
+  .eyebrow { text-align: center; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A78BFA; margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
+  h1 { font-family: 'Fraunces', serif; font-size: 28px; text-align: center; margin: 0 0 10px; line-height: 1.2; animation: fadeUp 0.5s ease both; animation-delay: 0.05s; }
+  .sub { text-align: center; color: #A9A3D9; font-size: 14px; max-width: 340px; margin: 0 auto 32px; animation: fadeUp 0.5s ease both; animation-delay: 0.1s; }
+  .card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+    padding: 28px; backdrop-filter: blur(16px); animation: fadeUp 0.5s ease both; animation-delay: 0.15s;
+  }
+  input {
+    width: 100%; box-sizing: border-box; border-radius: 10px; padding: 12px 14px; font-size: 15px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #F3F1FF; margin-bottom: 12px; outline: none;
+  }
+  button {
+    width: 100%; border: none; cursor: pointer; border-radius: 10px; padding: 13px;
+    font-size: 15px; font-weight: 600; background: linear-gradient(135deg, #4FA0FF, #A78BFA); color: #FFFFFF;
+    transition: transform 0.15s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button:disabled { opacity: 0.6; cursor: default; }
+  .error { color: #FF8A8A; font-size: 13px; margin-top: 10px; text-align: center; }
+  .back-link { text-align: center; margin-top: 16px; }
+  .back-link a { color: #4FA0FF; font-size: 13px; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<svg class="floating-bubble fb1" viewBox="0 0 100 60" fill="none"><rect x="4" y="4" width="84" height="34" rx="10" fill="#4FA0FF"/><polygon points="20,38 12,54 32,40" fill="#4FA0FF"/></svg>
+<svg class="floating-bubble fb2" viewBox="0 0 100 60" fill="none"><rect x="4" y="4" width="84" height="34" rx="10" fill="#A78BFA"/><polygon points="20,38 12,54 32,40" fill="#A78BFA"/></svg>
+
+<div class="wrap">
+  <div class="eyebrow">SayItRight AI</div>
+  <h1>Enter your code</h1>
+  <p class="sub">Unlock unlimited generations.</p>
+
+  <div class="card">
+    <input type="text" id="codeInput" placeholder="Your access code" />
+    <button id="unlockBtn" onclick="unlock()">Unlock</button>
+    <p class="error" id="errorMsg" style="display:none;"></p>
+    <div class="back-link"><a href="/">← Back without unlocking</a></div>
+  </div>
+</div>
+
+<script>
+  async function unlock() {
+    const code = document.getElementById('codeInput').value.trim();
+    const btn = document.getElementById('unlockBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.style.display = 'none';
+    if (!code) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+
+    try {
+      // У SayItRight нет отдельной /api/redeem-appsumo — проверка AppSumo-кода
+      // встроена прямо в /api/generate. Поэтому здесь просто принимаем код
+      // и ставим флаги; если код на деле неверный, это выяснится при первой
+      // попытке генерации (покажется ошибка, и вернёшься сюда).
+      localStorage.setItem('sir_unlocked', 'true');
+      localStorage.setItem('sir_licenseCode', code);
+      window.location.href = '/?welcome=1';
+    } catch (err) {
+      errorMsg.textContent = err.message || 'Something went wrong.';
+      errorMsg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Unlock';
+    }
+  }
+
+  document.getElementById('codeInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') unlock();
+  });
+</script>
+
+</body>
+</html>
