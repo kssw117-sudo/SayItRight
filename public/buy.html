@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SayItRight AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0; color: #F3F1FF;
+    font-family: -apple-system, sans-serif; line-height: 1.6;
+    position: relative; overflow-x: hidden;
+    background: linear-gradient(120deg, #0E0B26, #171040, #0E0B26, #10143A);
+    background-size: 300% 300%;
+    animation: bgShift 14s ease infinite;
+  }
+  @keyframes bgShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes floatBubble {
+    0%   { transform: translate(0, 0) rotate(-6deg); }
+    50%  { transform: translate(16px, -24px) rotate(4deg); }
+    100% { transform: translate(0, 0) rotate(-6deg); }
+  }
+  .floating-bubble { position: absolute; pointer-events: none; animation: floatBubble 7s ease-in-out infinite; opacity: 0.35; }
+  .fb1 { top: 6%; right: 6%; width: 90px; animation-duration: 8s; }
+  .fb2 { bottom: 10%; left: 5%; width: 60px; animation-duration: 6s; animation-delay: -3s; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 60px 24px 100px; position: relative; z-index: 1; }
+  .eyebrow { text-align: center; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A78BFA; margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
+  h1 { font-family: 'Fraunces', serif; font-size: 34px; text-align: center; margin: 0 0 16px; line-height: 1.2; animation: fadeUp 0.5s ease both; animation-delay: 0.05s; }
+  .sub { text-align: center; color: #A9A3D9; font-size: 16px; max-width: 460px; margin: 0 auto 36px; animation: fadeUp 0.5s ease both; animation-delay: 0.1s; }
+  .price-box {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+    padding: 32px; text-align: center; margin-bottom: 40px; backdrop-filter: blur(16px);
+    animation: fadeUp 0.5s ease both; animation-delay: 0.15s;
+  }
+  .price { font-size: 42px; font-weight: 700; margin-bottom: 4px; }
+  .price-note { color: #A9A3D9; font-size: 13px; margin-bottom: 24px; }
+  .widget-wrap { display: flex; justify-content: center; }
+  .widget-wrap iframe { transition: transform 0.15s ease, box-shadow 0.15s ease; border-radius: 10px; }
+  .widget-wrap iframe:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,160,255,0.4); }
+  .features { margin: 40px 0; }
+  .feature {
+    display: flex; gap: 14px; margin-bottom: 20px; align-items: flex-start;
+    opacity: 0; animation: fadeUp 0.5s ease both;
+  }
+  .feature:nth-child(1) { animation-delay: 0.2s; }
+  .feature:nth-child(2) { animation-delay: 0.26s; }
+  .feature:nth-child(3) { animation-delay: 0.32s; }
+  .feature:nth-child(4) { animation-delay: 0.38s; }
+  .feature:nth-child(5) { animation-delay: 0.44s; }
+  .feature:nth-child(6) { animation-delay: 0.5s; }
+  .feature:nth-child(7) { animation-delay: 0.56s; }
+  .feature .dot { width: 6px; height: 6px; border-radius: 50%; background: #4FA0FF; margin-top: 8px; flex-shrink: 0; }
+  .feature p { margin: 0; color: #E5E2FF; }
+  .feature strong { display: block; margin-bottom: 2px; color: #FFFFFF; }
+  footer { text-align: center; color: #A9A3D9; font-size: 12px; margin-top: 60px; }
+  .back-link { text-align: center; margin-top: 16px; }
+  .back-link a { color: #4FA0FF; font-size: 13px; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<svg class="floating-bubble fb1" viewBox="0 0 100 60" fill="none"><rect x="4" y="4" width="84" height="34" rx="10" fill="#4FA0FF"/><polygon points="20,38 12,54 32,40" fill="#4FA0FF"/></svg>
+<svg class="floating-bubble fb2" viewBox="0 0 100 60" fill="none"><rect x="4" y="4" width="84" height="34" rx="10" fill="#A78BFA"/><polygon points="20,38 12,54 32,40" fill="#A78BFA"/></svg>
+
+<div class="wrap">
+  <div class="eyebrow">AI-powered &middot; Instant access</div>
+  <h1>SayItRight AI</h1>
+  <p class="sub">Write in your own language. Get natural, professional English -- with explanations of every change, in 35 languages.</p>
+
+  <div class="price-box">
+    <div class="price">$59</div>
+    <div class="price-note">one-time payment &middot; lifetime access &middot; secure card payment</div>
+    <div class="widget-wrap">
+      <!-- ЗАМЕНИ src на реальную ссылку виджета из Lava.top после создания товара SayItRight AI -->
+      <iframe title="lava.top" style="border: none" width="250" height="80" src="https://widget.lava.top/ВСТАВЬ_ID_ВИДЖЕТА"></iframe>
+    </div>
+    <div class="note" style="font-size:12px;color:#A78BFA;margin-top:16px;">Instant delivery -- your access code arrives right after payment.</div>
+    <div class="back-link"><a href="/">Already have a code? Enter it here</a></div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>35 languages, translator-style</strong>Swap between your language and the target language with one click -- write in any direction.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Formality slider</strong>From casual to very formal, matched to the message type -- email, social post, formal document, and more.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Native-language explanations</strong>Every change is explained in your own language, so you actually learn for next time.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Tone check</strong>Flags phrasing that could come across as too blunt to a native reader, with a softer alternative.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Quick check mode</strong>Fix spelling and grammar only, keeping your own wording exactly as you wrote it.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Listen to the result</strong>Hear your rewritten text read aloud, so you know how it actually sounds.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Session history</strong>Your last five rewrites are saved so you can go back and copy them again.</p>
+    </div>
+  </div>
+
+  <footer>Plainwork &middot; a tool by Ksenia</footer>
+</div>
+
+</body>
+</html>
