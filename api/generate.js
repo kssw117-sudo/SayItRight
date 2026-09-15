@@ -11,11 +11,12 @@ export default async function handler(req, res) {
 
   const { licenseCode, content, trial } = req.body || {};
 
-  const isSharedCode = licenseCode && licenseCode === process.env.ACCESS_CODE;
-  const isAppSumoCode = licenseCode && licenseCode.startsWith('SIR-');
+  const normalizedCode = licenseCode ? licenseCode.trim().toUpperCase() : '';
+  const isSharedCode = normalizedCode && normalizedCode === process.env.ACCESS_CODE;
+  const isAppSumoCode = normalizedCode && normalizedCode.startsWith('SIR-');
   const isFreeTrial = trial === true;
 
-  if (!isFreeTrial && (!licenseCode || (!isSharedCode && !isAppSumoCode))) {
+  if (!isFreeTrial && (!normalizedCode || (!isSharedCode && !isAppSumoCode))) {
     return res.status(403).json({ error: 'Invalid access code.' });
   }
 
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
       );
       const ghData = await ghRes.json();
       const codes = JSON.parse(Buffer.from(ghData.content, 'base64').toString('utf-8'));
-      const found = codes.find((c) => c.code === licenseCode);
+      const found = codes.find((c) => c.code === normalizedCode);
       if (!found) {
         return res.status(403).json({ error: 'Code not recognized.' });
       }
