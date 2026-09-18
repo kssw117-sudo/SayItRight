@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const BG = '#0E0B26';
 const BG_DEEP = '#080619';
@@ -139,7 +139,7 @@ export default function App() {
   const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('sir_free_trial_used') === 'true');
   const [licenseError, setLicenseError] = useState('');
 
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState(() => localStorage.getItem('sir_draft_inputText') || '');
   const [messageType, setMessageType] = useState('email');
   const [formality, setFormality] = useState(50);
   const [quickCheckOnly, setQuickCheckOnly] = useState(false);
@@ -155,7 +155,49 @@ export default function App() {
   const [speaking, setSpeaking] = useState(false);
   const [dailyCount, setDailyCount] = useState(() => getDailyCount());
   const [showSupportEmail, setShowSupportEmail] = useState(false);
+  const [showHelpBubble, setShowHelpBubble] = useState(false);
+
+  // Лёгкий "поп"-звук для открытия/закрытия окошка подсказки
+  function playPopSound(opening) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(opening ? 520 : 380, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(opening ? 780 : 260, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) { /* звук не критичен для работы приложения */ }
+  }
+
   const [showHowTo, setShowHowTo] = useState(false);
+
+  // Сохраняем текст ввода при каждом изменении, чтобы не терять его
+  // при обновлении или случайном закрытии страницы
+  useEffect(() => { localStorage.setItem('sir_draft_inputText', inputText); }, [inputText]);
+
+  // Восстанавливаем последний результат и историю при загрузке страницы
+  useEffect(() => {
+    try {
+      const savedResult = localStorage.getItem('sir_draft_result');
+      if (savedResult) setResult(JSON.parse(savedResult));
+      const savedHistory = localStorage.getItem('sir_draft_history');
+      if (savedHistory) setHistory(JSON.parse(savedHistory));
+    } catch (e) { /* повреждённые данные — просто игнорируем */ }
+  }, []);
+
+  // Сохраняем результат и историю при каждом изменении
+  useEffect(() => {
+    try { if (result) localStorage.setItem('sir_draft_result', JSON.stringify(result)); } catch (e) {}
+  }, [result]);
+  useEffect(() => {
+    try { localStorage.setItem('sir_draft_history', JSON.stringify(history)); } catch (e) {}
+  }, [history]);
 
   function handleUnlock() {
     if (!licenseCode.trim()) {
@@ -264,7 +306,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
   }
 
   const sharedStyles = `
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Playfair+Display:wght@500&family=Inter:wght@400;500;600&display=swap');
     body { margin: 0; }
     @keyframes bubblePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
     .bubble-pulse { animation: bubblePulse 2.6s ease-in-out infinite; }
@@ -298,7 +340,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
       <div className="drift-shape" style={{ position: 'absolute', bottom: '8%', left: '6%', opacity: 0.26, animationDelay: '0.7s' }}><ProfileSoundIcon size={38} delay="1s" /></div>
 
       <div className="max-w-2xl mx-auto px-4 py-10" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col items-center text-center gap-2 mb-6">
           <div><TalkingPerson size={90} /></div>
           <div>
             <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 26, color: INK }}>SayItRight AI</h1>
@@ -306,37 +348,21 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           </div>
         </div>
 
-        <button
-          onClick={() => setShowHowTo(!showHowTo)}
-          className="w-full flex items-center justify-between rounded-lg px-4 py-2.5 mb-5 text-sm"
-          style={{ background: CARD, border: `1px solid ${LINE}`, color: INK, cursor: 'pointer' }}
-        >
-          <span>❓ How to use SayItRight AI</span>
-          <span style={{ transform: showHowTo ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
-        </button>
-        {showHowTo && (
-          <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
-            {[
-              { n: '1', title: 'Paste your message', body: 'Type or paste what you want to say — in your own language, or in rough English. It works either way.' },
-              { n: '2', title: 'Pick your languages', body: 'Choose your native language and the language you want to write in. Use the swap button (⇄) to switch them anytime, like a translator.' },
-              { n: '3', title: 'Set the tone', body: 'Drag the formality slider from Casual to Very formal, and pick the message type (email, social post, etc.) to match the situation.' },
-              { n: '4', title: 'Rewrite or Quick check', body: 'Hit "Rewrite it" for a full polish, or switch on "Quick check" if you just want spelling and grammar fixed without changing your wording.' },
-              { n: '5', title: 'Learn from the notes', body: 'Every result comes with a plain-language explanation of what changed and why — written in your own language, so you actually learn for next time.' },
-              { n: '6', title: 'Listen or copy', body: 'Hit 🔊 Listen to hear how it sounds out loud, or Copy to paste it straight into your email or message.' },
-            ].map((step) => (
-              <div key={step.n} className="flex gap-3" style={{ marginBottom: 14 }}>
-                <div style={{
-                  width: 22, height: 22, borderRadius: '50%', border: `1px solid ${BLUE}`, color: BLUE,
-                  fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>{step.n}</div>
-                <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 2 }}>{step.title}</div>
-                  <div style={{ fontSize: 12.5, color: INK_SOFT, lineHeight: 1.5 }}>{step.body}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="rounded-lg overflow-hidden mb-4" style={{ position: 'relative' }}>
+          <img
+            src="/images/hero1.jpg"
+            alt="Fixes your English. Teaches you why."
+            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 10 }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,20,40,0) 40%, rgba(10,20,40,0.6) 100%)', borderRadius: 10 }} />
+          <p style={{
+            position: 'absolute', bottom: 14, left: 16, right: 16, margin: 0,
+            color: '#F5F4EE', fontFamily: "'Playfair Display', serif", fontSize: 19, lineHeight: 1.35,
+            textAlign: 'center', textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+          }}>
+            Fixes your English. Teaches you why.
+          </p>
+        </div>
 
         {!unlocked && (
           <div className="rounded-lg p-3 mb-5" style={{ background: freeTrialUsed ? 'rgba(255,138,138,0.1)' : 'rgba(79,160,255,0.1)', border: `1px solid ${freeTrialUsed ? 'rgba(255,138,138,0.3)' : 'rgba(79,160,255,0.3)'}` }}>
@@ -603,6 +629,9 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         )}
 
         <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 13, color: BLUE, marginBottom: 2 }}>
+            Corrections that actually stick.
+          </span>
           <span className="text-xs" style={{ color: INK_SOFT }}>Powered by Claude &middot; Plainwork by Ksenia</span>
 
           <div className="flex gap-4 mt-1">
@@ -623,6 +652,38 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           </div>
         </div>
       </div>
+
+      {/* Плавающая кнопка "как пользоваться" — в углу экрана */}
+      <button
+        onClick={() => {
+          playPopSound(!showHelpBubble);
+          setShowHelpBubble(v => !v);
+        }}
+        aria-label="How it works"
+        style={{
+          position: 'fixed', bottom: 20, right: 20, width: 48, height: 48, borderRadius: '50%',
+          background: BLUE, color: '#FFF', border: 'none',
+          cursor: 'pointer', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 14px rgba(79,160,255,0.35)', zIndex: 50,
+        }}
+      >
+        {showHelpBubble ? '\u2715' : '?'}
+      </button>
+
+      {showHelpBubble && (
+        <div
+          style={{
+            position: 'fixed', bottom: 80, right: 20, width: 310, maxWidth: 'calc(100vw - 40px)',
+            background: CARD, borderRadius: 14, padding: 18, boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+            border: `1px solid ${LINE}`, zIndex: 50, backdropFilter: 'blur(16px)',
+          }}
+        >
+          <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 600, color: INK }}>How SayItRight AI works</p>
+          <p style={{ margin: 0, fontSize: 12.5, color: INK_SOFT, lineHeight: 1.55 }}>
+            Write in your own language or rough English, pick your languages and tone, and hit Rewrite. Every result comes with a plain-language explanation of what changed and why, plus a listen button to hear how it sounds. Switch on Quick check for spelling and grammar only.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
