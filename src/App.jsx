@@ -7,9 +7,9 @@ const LINE = 'rgba(255,255,255,0.12)';
 const INK = '#F3F1FF';
 const INK_SOFT = '#A9A3D9';
 const BLUE = '#4FA0FF';
-const INDIGO = '#A78BFA';
-const INDIGO_BRIGHT = '#C4B5FD';
-const INDIGO_DEEP = '#6D5BD0';
+const INDIGO = '#2D6FDB';
+const INDIGO_BRIGHT = '#8FBFFF';
+const INDIGO_DEEP = '#1E4FA8';
 
 const FREE_TRIAL_LIMIT = 0;
 const DAILY_GEN_LIMIT = 50;
@@ -116,6 +116,31 @@ function ProfileSoundIcon({ size = 60, delay = '0s' }) {
 
 // Речевой пузырь с текстом "Say It Right" — используется только на экране
 // разблокировки, рядом с человечком (две независимые фигуры, не одна сложная).
+// Иллюстрация "до/после" — два пузыря со стрелкой, нарисованные прямо в
+// коде (как человечек и остальные декоративные фигуры), без файла-картинки
+function BeforeAfterBubbles({ width = 320 }) {
+  const height = width * 0.42;
+  return (
+    <svg width={width} height={height} viewBox="0 0 320 134" fill="none">
+      {/* Левый пузырь — волнистые линии (ломаный текст) */}
+      <rect x="8" y="8" width="120" height="80" rx="14" stroke={BLUE} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <polygon points="35,88 25,108 48,89" stroke={BLUE} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <circle cx="48" cy="48" r="7" fill={BLUE} />
+      <circle cx="68" cy="48" r="7" fill={BLUE} />
+      <circle cx="88" cy="48" r="7" fill={BLUE} />
+
+      {/* Стрелка */}
+      <path d="M136 46 Q160 20 184 46" stroke={INDIGO} strokeWidth="4" fill="none" strokeLinecap="round" />
+      <polygon points="184,46 172,42 178,54" fill={INDIGO} />
+
+      {/* Правый пузырь — галочка (исправлено) */}
+      <rect x="192" y="8" width="120" height="80" rx="14" stroke={INDIGO} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <polygon points="219,88 209,108 232,89" stroke={INDIGO} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <polyline points="222,50 245,68 285,28" stroke={INDIGO} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function TextBubble({ size = 100 }) {
   return (
     <svg width={size} height={size * 0.8} viewBox="0 0 200 160">
@@ -339,6 +364,12 @@ Respond ONLY with valid JSON, no markdown, no code fences:
       <div className="drift-shape" style={{ position: 'absolute', top: '6%', left: '4%', opacity: 0.3 }}><ProfileSoundIcon size={44} delay="0s" /></div>
       <div className="drift-shape" style={{ position: 'absolute', top: '40%', right: '5%', opacity: 0.26, animationDelay: '1.4s' }}><ProfileSoundIcon size={56} delay="0.6s" /></div>
       <div className="drift-shape" style={{ position: 'absolute', bottom: '8%', left: '6%', opacity: 0.26, animationDelay: '0.7s' }}><ProfileSoundIcon size={38} delay="1s" /></div>
+      <div className="drift-shape" style={{ position: 'absolute', top: '18%', right: '8%', opacity: 0.22, animationDelay: '2.1s' }}>
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4V6a2 2 0 0 1 2-2z" fill={BLUE} /></svg>
+      </div>
+      <div className="drift-shape" style={{ position: 'absolute', bottom: '20%', right: '4%', opacity: 0.2, animationDelay: '1.1s' }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4V6a2 2 0 0 1 2-2z" fill={INDIGO} /></svg>
+      </div>
 
       <div className="max-w-2xl mx-auto px-4 py-10" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex flex-col items-center text-center gap-2 mb-6">
@@ -349,22 +380,16 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           </div>
         </div>
 
-        <div className="rounded-lg overflow-hidden mb-4" style={{ position: 'relative' }}>
-          <img
-            src="/images/hero1.jpg"
-            alt="Fixes your English. Teaches you why."
-            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 10 }}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,20,40,0) 40%, rgba(10,20,40,0.6) 100%)', borderRadius: 10 }} />
-          <div style={{ position: 'absolute', bottom: 14, left: 0, right: 0, overflow: 'hidden', height: 26 }}>
-            <div style={{ position: 'absolute', animation: 'marqueeScroll 13s linear infinite' }}>
-              <span style={{
-                color: '#F5F4EE', fontFamily: "'Playfair Display', serif", fontSize: 19,
-                textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-              }}>
-                Fixes your English. Teaches you why
-              </span>
-            </div>
+        <div className="flex justify-center mb-3">
+          <BeforeAfterBubbles width={280} />
+        </div>
+        <div style={{ overflow: 'hidden', marginBottom: 16, position: 'relative', height: 30 }}>
+          <div style={{ position: 'absolute', animation: 'marqueeScroll 13s linear infinite' }}>
+            <span style={{
+              color: '#F5F4EE', fontFamily: "'Playfair Display', serif", fontSize: 19,
+            }}>
+              Fixes your English. Teaches you why
+            </span>
           </div>
         </div>
 
@@ -500,7 +525,12 @@ Respond ONLY with valid JSON, no markdown, no code fences:
                 border: `1px solid ${quickCheckOnly ? BLUE : LINE}`, cursor: 'pointer',
               }}
             >
-              <div style={{ fontSize: 18 }}>{'\u2705'}</div>
+              <div style={{ fontSize: 18, display: 'flex', justifyContent: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="#A78BFA" strokeWidth="2" />
+                  <polyline points="7,12.5 10.5,16 17,8.5" stroke="#A78BFA" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
               <div style={{ fontSize: 9.5, color: INK_SOFT, marginTop: 3 }}>Quick check {quickCheckOnly ? 'On' : 'Off'}</div>
             </button>
           </div>
@@ -530,7 +560,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
               onClick={handleGenerate}
               disabled={loading}
               className="w-full font-medium py-2.5 rounded-lg text-sm mt-4"
-              style={{ background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`, color: '#FFFFFF', opacity: loading ? 0.7 : 1, boxShadow: `0 8px 24px rgba(79,160,255,0.3)` }}
+              style={{ background: `linear-gradient(135deg, ${BLUE}, #A78BFA)`, color: '#FFFFFF', opacity: loading ? 0.7 : 1, boxShadow: `0 8px 24px rgba(79,160,255,0.3)` }}
             >
               {loading ? 'Writing...' : quickCheckOnly ? 'Check it' : 'Rewrite it'}
             </button>
