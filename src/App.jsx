@@ -309,6 +309,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
     @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Playfair+Display:wght@500&family=Inter:wght@400;500;600&display=swap');
     body { margin: 0; }
     @keyframes bubblePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+    @keyframes marqueeScroll { 0% { left: 100%; } 100% { left: -100%; } }
     .bubble-pulse { animation: bubblePulse 2.6s ease-in-out infinite; }
     @keyframes driftShape {
       0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -355,20 +356,23 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 10 }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,20,40,0) 40%, rgba(10,20,40,0.6) 100%)', borderRadius: 10 }} />
-          <p style={{
-            position: 'absolute', bottom: 14, left: 16, right: 16, margin: 0,
-            color: '#F5F4EE', fontFamily: "'Playfair Display', serif", fontSize: 19, lineHeight: 1.35,
-            textAlign: 'center', textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-          }}>
-            Fixes your English. Teaches you why.
-          </p>
+          <div style={{ position: 'absolute', bottom: 14, left: 0, right: 0, overflow: 'hidden', height: 26 }}>
+            <div style={{ position: 'absolute', animation: 'marqueeScroll 13s linear infinite' }}>
+              <span style={{
+                color: '#F5F4EE', fontFamily: "'Playfair Display', serif", fontSize: 19,
+                textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+              }}>
+                Fixes your English. Teaches you why
+              </span>
+            </div>
+          </div>
         </div>
 
         {!unlocked && (
-          <div className="rounded-lg p-3 mb-5" style={{ background: freeTrialUsed ? 'rgba(255,138,138,0.1)' : 'rgba(79,160,255,0.1)', border: `1px solid ${freeTrialUsed ? 'rgba(255,138,138,0.3)' : 'rgba(79,160,255,0.3)'}` }}>
+          <div className="rounded-lg p-3 mb-5" style={{ background: freeTrialUsed ? 'rgba(167,139,250,0.1)' : 'rgba(79,160,255,0.1)', border: `1px solid ${freeTrialUsed ? 'rgba(167,139,250,0.3)' : 'rgba(79,160,255,0.3)'}` }}>
             {freeTrialUsed ? (
               <>
-                <p className="text-sm" style={{ color: '#FF8A8A', margin: 0, fontWeight: 600 }}>Free preview used</p>
+                <p className="text-sm" style={{ color: INDIGO_BRIGHT, margin: 0, fontWeight: 600 }}>Free preview used</p>
                 <div className="flex gap-2 mt-2">
                   <input
                     type="text"
@@ -381,16 +385,16 @@ Respond ONLY with valid JSON, no markdown, no code fences:
                   <button
                     onClick={handleUnlock}
                     className="font-medium px-4 rounded-lg text-sm"
-                    style={{ background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`, color: '#FFFFFF' }}
+                    style={{ background: `linear-gradient(135deg, ${INDIGO}, ${INDIGO_DEEP})`, color: '#FFFFFF' }}
                   >
                     Unlock
                   </button>
                 </div>
-                {licenseError && <p className="text-sm mt-2" style={{ color: '#FF8A8A' }}>{licenseError}</p>}
-                <a href="/buy.html" className="block text-xs mt-2" style={{ color: BLUE }}>No code? Get access</a>
+                {licenseError && <p className="text-sm mt-2" style={{ color: INDIGO_BRIGHT }}>{licenseError}</p>}
+                <a href="/buy.html" className="block text-xs mt-2" style={{ color: INDIGO }}>No code? Get access</a>
               </>
             ) : (
-              <p className="text-sm" style={{ color: '#8FBFFF', margin: 0 }}>✨ Try it free — your first generation is on us. No code needed.</p>
+              <p className="text-sm" style={{ color: '#8FBFFF', margin: 0 }}>Try it free — your first generation is on us. No code needed.</p>
             )}
           </div>
         )}
@@ -629,7 +633,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         )}
 
         <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 13, color: BLUE, marginBottom: 2 }}>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'normal', textDecoration: 'underline', fontSize: 13, color: BLUE, marginBottom: 2 }}>
             Corrections that actually stick.
           </span>
           <span className="text-xs" style={{ color: INK_SOFT }}>Powered by Claude &middot; Plainwork by Ksenia</span>
