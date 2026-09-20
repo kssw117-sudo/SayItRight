@@ -130,8 +130,8 @@ function BeforeAfterBubbles({ width = 320 }) {
       <circle cx="88" cy="48" r="7" fill={BLUE} />
 
       {/* Стрелка */}
-      <path d="M136 46 Q160 20 184 46" stroke={INDIGO} strokeWidth="4" fill="none" strokeLinecap="round" />
-      <polygon points="184,46 172,42 178,54" fill={INDIGO} />
+      <path d="M136 50 Q159 22 182 50" stroke={INDIGO} strokeWidth="4" fill="none" strokeLinecap="round" />
+      <polygon points="188,58 174,49 183,42" fill={INDIGO} />
 
       {/* Правый пузырь — галочка (исправлено) */}
       <rect x="192" y="8" width="120" height="80" rx="14" stroke={INDIGO} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
