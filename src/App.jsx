@@ -684,6 +684,9 @@ Respond ONLY with valid JSON, no markdown, no code fences:
               <a href="mailto:kssw117@gmail.com" style={{ fontSize: 11, color: BLUE }}>kssw117@gmail.com</a>
             )}
           </div>
+          <p style={{ fontSize: 10.5, color: INK_SOFT, textAlign: 'center', marginTop: 10, opacity: 0.8 }}>
+            Грезина Ксения Викторовна (Ksenia Grezina) &middot; Tax ID (ИНН) 710607167655
+          </p>
         </div>
       </div>
 
