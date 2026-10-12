@@ -663,8 +663,8 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         )}
 
         <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'normal', textDecoration: 'underline', fontSize: 13, color: BLUE, marginBottom: 2 }}>
-            Corrections that actually stick.
+          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'normal', fontSize: 13, color: BLUE, marginBottom: 2 }}>
+            Corrections that actually stick
           </span>
           <span className="text-xs" style={{ color: INK_SOFT }}>Powered by Claude &middot; Plainwork by Ksenia</span>
 
