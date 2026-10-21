@@ -58,6 +58,13 @@
   footer { text-align: center; color: #A9A3D9; font-size: 12px; margin-top: 60px; }
   .back-link { text-align: center; margin-top: 16px; }
   .back-link a { color: #4FA0FF; font-size: 13px; text-decoration: underline; }
+  .refund-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center; padding:24px; }
+  .refund-box { background:#171040; border:1px solid rgba(255,255,255,0.14); border-radius:16px; padding:32px; max-width:440px; width:100%; position:relative; max-height:80vh; overflow-y:auto; backdrop-filter: blur(16px); }
+  .refund-x { position:absolute; top:14px; right:16px; background:none; border:none; font-size:22px; color:#A9A3D9; cursor:pointer; line-height:1; }
+  .refund-eyebrow { font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#A78BFA; margin-bottom:10px; }
+  .refund-h { font-family:'Fraunces',serif; font-size:20px; margin:0 0 14px; color:#FFFFFF; }
+  .refund-p { font-size:14px; color:#E5E2FF; margin:0 0 12px; line-height:1.6; }
+  .refund-p a { color:#4FA0FF; }
 </style>
 </head>
 <body>
@@ -112,11 +119,26 @@
     </div>
   </div>
 
+  <div style="display:flex;justify-content:center;gap:16px;margin-top:16px;">
+    <a href="#" onclick="toggleRefund(true);return false;" style="font-size:12px;color:#4FA0FF;">Refunds</a>
+  </div>
+
   <footer>Plainwork &middot; a tool by Ksenia</footer>
-  <p style="font-size:10.5px;color:#A9A3D9;text-align:center;margin-top:10px;opacity:0.8;">
-    Грезина Ксения Викторовна (Ksenia Grezina) &middot; Tax ID (ИНН) 710607167655
-  </p>
 </div>
+
+<div id="refundModal" class="refund-overlay" onclick="if(event.target===this)toggleRefund(false)">
+  <div class="refund-box">
+    <button class="refund-x" onclick="toggleRefund(false)" aria-label="Close">&times;</button>
+    <div class="refund-eyebrow">Refund Policy</div>
+    <h2 class="refund-h">14-Day Money-Back Guarantee</h2>
+    <p class="refund-p">If SayItRight AI isn't the right fit for you, you can request a full refund within 14 days of your purchase &mdash; no questions asked.</p>
+    <p class="refund-p"><strong>How to request:</strong> Email <a href="mailto:kssw117@gmail.com">kssw117@gmail.com</a> with the email you used to purchase. Refunds are processed within 2 business days, back to your original payment method.</p>
+    <p class="refund-p"><strong>After a refund:</strong> Lifetime access to SayItRight AI is deactivated.</p>
+  </div>
+</div>
+<script>
+  function toggleRefund(show) { document.getElementById('refundModal').style.display = show ? 'flex' : 'none'; }
+</script>
 
 </body>
 </html>
