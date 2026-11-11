@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
+// Ответ сервера о пробной попытке или дневном лимите (считаются на сервере).
+function guardError(data) {
+  if (data && (data.code === 'trial_used' || data.code === 'limit_reached')) {
+    const e = new Error(data.error || data.code);
+    e.guardMessage = data.error;
+    e.guardCode = data.code;
+    return e;
+  }
+  return null;
+}
+
+
 const BG = '#0E0B26';
 const BG_DEEP = '#080619';
 const CARD = 'rgba(255,255,255,0.05)';
@@ -310,6 +322,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         body: JSON.stringify({ licenseCode, content: prompt, trial: isTrial }),
       });
       const data = await res.json();
+      { const ge = guardError(data); if (ge && ge.guardCode === 'trial_used') { localStorage.setItem('sir_free_trial_used', 'true'); setFreeTrialUsed(true); } }
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
       if (isTrial) {
         localStorage.setItem('sir_free_trial_used', 'true');
