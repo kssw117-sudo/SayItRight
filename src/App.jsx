@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { SayItRightHero, WorkspaceHeading, EditorMast, SettingIcon, LanguageLab } from './SayItRightVisuals.jsx';
 
 // Ответ сервера о пробной попытке или дневном лимите (считаются на сервере).
 function guardError(data) {
@@ -213,6 +214,18 @@ export default function App() {
   }
 
   const [showHowTo, setShowHowTo] = useState(false);
+  const editorRef = useRef(null);
+
+  function useExample(example) {
+    if (inputText.trim() && inputText !== example.before && !window.confirm('Replace the current draft with this example?')) return false;
+    setInputText(example.before);
+    setMessageType(example.type);
+    requestAnimationFrame(() => {
+      editorRef.current?.focus({ preventScroll: true });
+      editorRef.current?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    });
+    return true;
+  }
 
   // Сохраняем текст ввода при каждом изменении, чтобы не терять его
   // при обновлении или случайном закрытии страницы
@@ -371,43 +384,16 @@ Respond ONLY with valid JSON, no markdown, no code fences:
 
 
   return (
-    <div className="bg-gradient-animated min-h-screen" style={{ fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
+    <div className="sir-page min-h-screen" style={{ fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
       <style>{sharedStyles}</style>
-
-      <div className="drift-shape" style={{ position: 'absolute', top: '6%', left: '4%', opacity: 0.3 }}><ProfileSoundIcon size={44} delay="0s" /></div>
-      <div className="drift-shape" style={{ position: 'absolute', top: '40%', right: '5%', opacity: 0.26, animationDelay: '1.4s' }}><ProfileSoundIcon size={56} delay="0.6s" /></div>
-      <div className="drift-shape" style={{ position: 'absolute', bottom: '8%', left: '6%', opacity: 0.26, animationDelay: '0.7s' }}><ProfileSoundIcon size={38} delay="1s" /></div>
-      <div className="drift-shape" style={{ position: 'absolute', top: '18%', right: '8%', opacity: 0.22, animationDelay: '2.1s' }}>
-        <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4V6a2 2 0 0 1 2-2z" fill={BLUE} /></svg>
-      </div>
-      <div className="drift-shape" style={{ position: 'absolute', bottom: '20%', right: '4%', opacity: 0.2, animationDelay: '1.1s' }}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4V6a2 2 0 0 1 2-2z" fill={INDIGO} /></svg>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-10" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex flex-col items-center text-center gap-2 mb-6">
-          <div><TalkingPerson size={90} /></div>
-          <div>
-            <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 26, color: INK }}>SayItRight AI</h1>
-            <p style={{ fontSize: 13, color: INK_SOFT }}>Write naturally in English, explained in your own language.</p>
-          </div>
-        </div>
-
-        <div className="flex justify-center mb-3">
-          <BeforeAfterBubbles width={280} />
-        </div>
-        <div style={{ overflow: 'hidden', marginBottom: 16, position: 'relative', height: 30 }}>
-          <div style={{ position: 'absolute', animation: 'marqueeScroll 13s linear infinite' }}>
-            <span style={{
-              color: '#F5F4EE', fontFamily: "'Playfair Display', serif", fontSize: 19,
-            }}>
-              Fixes your English. Teaches you why
-            </span>
-          </div>
-        </div>
-
+      <main className="sir-main">
+        <SayItRightHero />
+        <section className="work" id="editor">
+          <WorkspaceHeading />
+          <div className="studio-grid">
+            <div className="editor-column">
         {!unlocked && (
-          <div className="rounded-lg p-3 mb-5" style={{ background: freeTrialUsed ? 'rgba(167,139,250,0.1)' : 'rgba(79,160,255,0.1)', border: `1px solid ${freeTrialUsed ? 'rgba(167,139,250,0.3)' : 'rgba(79,160,255,0.3)'}` }}>
+          <div className="trial rounded-lg p-3 mb-5" style={{ background: freeTrialUsed ? 'rgba(167,139,250,0.1)' : 'rgba(79,160,255,0.1)', border: `1px solid ${freeTrialUsed ? 'rgba(167,139,250,0.3)' : 'rgba(79,160,255,0.3)'}` }}>
             {freeTrialUsed ? (
               <>
                 <p className="text-sm" style={{ color: INDIGO_BRIGHT, margin: 0, fontWeight: 600 }}>Free preview used</p>
@@ -437,11 +423,14 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           </div>
         )}
 
-        <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
-          <label style={{ fontSize: 12.5, color: INK_SOFT, fontWeight: 500, display: 'block', marginBottom: 6 }}>
+        <div className="card sir-editor rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
+          <EditorMast />
+          <label htmlFor="sir-message" style={{ fontSize: 12.5, color: INK_SOFT, fontWeight: 500, display: 'block', marginBottom: 6 }}>
             Your message (any language, or rough English)
           </label>
           <textarea
+            ref={editorRef}
+            id="sir-message"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             rows={5}
@@ -450,7 +439,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${LINE}`, color: INK, resize: 'vertical' }}
           />
 
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="row2 grid grid-cols-2 gap-3 mt-4">
             <div>
               <label style={{ fontSize: 12, color: INK_SOFT, fontWeight: 500, display: 'block', marginBottom: 4 }}>Message type</label>
               <select
@@ -464,7 +453,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             </div>
           </div>
 
-          <div className="flex items-end gap-2 mt-4">
+          <div className="languages flex items-end gap-2 mt-4">
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: INK_SOFT, fontWeight: 500, display: 'block', marginBottom: 4 }}>Your language</label>
               <select
@@ -478,7 +467,9 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             </div>
             <button
               onClick={() => { const a = nativeLang; setNativeLang(targetLang); setTargetLang(a); }}
+              className="swap"
               title="Swap languages"
+              aria-label="Swap languages"
               style={{
                 flexShrink: 0, width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.06)',
                 border: `1px solid ${LINE}`, color: BLUE, cursor: 'pointer', fontSize: 16, marginBottom: 1,
@@ -499,56 +490,55 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 mt-4">
+          <div className="settings grid grid-cols-4 gap-2 mt-4">
             <button
               onClick={() => setFormality(f => (f + 50) % 150 > 100 ? 0 : f + 50)}
-              className="rounded-xl p-2.5 text-center"
+              aria-pressed={true}
+              className="setting rounded-xl p-2.5 text-center"
               style={{ background: 'rgba(79,160,255,0.12)', border: `1px solid ${BLUE}`, cursor: 'pointer' }}
             >
-              <div style={{ fontSize: 18 }}>{'\u2699\ufe0f'}</div>
+              <SettingIcon name="formality" />
               <div style={{ fontSize: 9.5, color: INK_SOFT, marginTop: 3 }}>Formality</div>
             </button>
             <button
               onClick={() => setShowNotes(!showNotes)}
-              className="rounded-xl p-2.5 text-center"
+              aria-pressed={showNotes}
+              className="setting rounded-xl p-2.5 text-center"
               style={{
                 background: showNotes ? 'rgba(79,160,255,0.12)' : 'rgba(255,255,255,0.04)',
                 border: `1px solid ${showNotes ? BLUE : LINE}`, cursor: 'pointer',
               }}
             >
-              <div style={{ fontSize: 18 }}>{'\ud83d\udcac'}</div>
+              <SettingIcon name="notes" />
               <div style={{ fontSize: 9.5, color: INK_SOFT, marginTop: 3 }}>Notes {showNotes ? 'On' : 'Off'}</div>
             </button>
             <button
               onClick={() => setToneCheckOn(!toneCheckOn)}
-              className="rounded-xl p-2.5 text-center"
+              aria-pressed={toneCheckOn}
+              className="setting rounded-xl p-2.5 text-center"
               style={{
                 background: toneCheckOn ? 'rgba(79,160,255,0.12)' : 'rgba(255,255,255,0.04)',
                 border: `1px solid ${toneCheckOn ? BLUE : LINE}`, cursor: 'pointer',
               }}
             >
-              <div style={{ fontSize: 18 }}>{'\ud83c\udfb5'}</div>
+              <SettingIcon name="tone" />
               <div style={{ fontSize: 9.5, color: INK_SOFT, marginTop: 3 }}>Tone {toneCheckOn ? 'On' : 'Off'}</div>
             </button>
             <button
               onClick={() => setQuickCheckOnly(!quickCheckOnly)}
-              className="rounded-xl p-2.5 text-center"
+              aria-pressed={quickCheckOnly}
+              className="setting rounded-xl p-2.5 text-center"
               style={{
                 background: quickCheckOnly ? 'rgba(79,160,255,0.15)' : 'rgba(255,255,255,0.04)',
                 border: `1px solid ${quickCheckOnly ? BLUE : LINE}`, cursor: 'pointer',
               }}
             >
-              <div style={{ fontSize: 18, display: 'flex', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="#A78BFA" strokeWidth="2" />
-                  <polyline points="7,12.5 10.5,16 17,8.5" stroke="#A78BFA" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
+              <SettingIcon name="quick" />
               <div style={{ fontSize: 9.5, color: INK_SOFT, marginTop: 3 }}>Quick check {quickCheckOnly ? 'On' : 'Off'}</div>
             </button>
           </div>
 
-          <div className="mt-4">
+          <div className="slider mt-4">
             <label style={{ fontSize: 12, color: INK_SOFT, fontWeight: 500, display: 'block', marginBottom: 4 }}>
               Formality: {formality < 33 ? 'Casual' : formality < 66 ? 'Moderate' : 'Very formal'}
             </label>
@@ -572,14 +562,14 @@ Respond ONLY with valid JSON, no markdown, no code fences:
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="w-full font-medium py-2.5 rounded-lg text-sm mt-4"
+              className="rewrite w-full font-medium py-2.5 rounded-lg text-sm mt-4"
               style={{ background: `linear-gradient(135deg, ${BLUE}, #A78BFA)`, color: '#FFFFFF', opacity: loading ? 0.7 : 1, boxShadow: `0 8px 24px rgba(79,160,255,0.3)` }}
             >
               {loading ? 'Writing...' : quickCheckOnly ? 'Check it' : 'Rewrite it'}
             </button>
           )}
 
-          <div className="mt-3">
+          <div className="quota mt-3">
             <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
               <span style={{ fontSize: 10.5, color: INK_SOFT }}>Today's free generations</span>
               <span style={{ fontSize: 10.5, color: INK_SOFT, fontWeight: 600 }}>{DAILY_GEN_LIMIT - dailyCount}/{DAILY_GEN_LIMIT} left</span>
@@ -595,7 +585,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         </div>
 
         {result && (
-          <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
+          <div className="card sir-result rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
             <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
               <div style={{ fontSize: 12, color: BLUE, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Your text
@@ -657,7 +647,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
         )}
 
         {history.length > 0 && (
-          <div className="rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
+          <div className="card sir-result rounded-2xl p-5 mb-5" style={{ background: CARD, border: `1px solid ${LINE}`, backdropFilter: 'blur(16px)' }}>
             <div style={{ fontSize: 12, color: BLUE, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Recent
             </div>
@@ -675,8 +665,12 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           </div>
         )}
 
-        <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'normal', fontSize: 13, color: BLUE, marginBottom: 2 }}>
+                    </div>
+            <LanguageLab onUseExample={useExample} onListen={text => handleSpeak(text, 'en-US')} speaking={speaking} />
+          </div>
+        </section>
+        <footer className="sir-footer flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
+          <span className="slogan" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'normal', fontSize: 13, color: BLUE, marginBottom: 2 }}>
             Corrections that actually stick
           </span>
           <span className="text-xs" style={{ color: INK_SOFT }}>Powered by Claude &middot; Plainwork by Ksenia</span>
@@ -684,6 +678,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           <div className="flex gap-4 mt-1">
             <a href="/terms.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Terms of Service</a>
             <a href="/privacy.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Privacy Policy</a>
+            <a href="/refund.html" style={{ fontSize: 11, color: INK_SOFT, opacity: 0.7 }}>Refunds</a>
           </div>
           <div className="mt-1">
             {!showSupportEmail ? (
@@ -700,8 +695,8 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           <p style={{ fontSize: 10.5, color: INK_SOFT, textAlign: 'center', marginTop: 10, opacity: 0.8 }}>
             Грезина Ксения Викторовна (Ksenia Grezina) &middot; Tax ID (ИНН) 710607167655
           </p>
-        </div>
-      </div>
+        </footer>
+      </main>
 
       {/* Плавающая кнопка "как пользоваться" — в углу экрана */}
       <button
@@ -709,7 +704,9 @@ Respond ONLY with valid JSON, no markdown, no code fences:
           playPopSound(!showHelpBubble);
           setShowHelpBubble(v => !v);
         }}
+        className="help"
         aria-label="How it works"
+        aria-expanded={showHelpBubble}
         style={{
           position: 'fixed', bottom: 20, right: 20, width: 48, height: 48, borderRadius: '50%',
           background: BLUE, color: '#FFF', border: 'none',
@@ -721,7 +718,7 @@ Respond ONLY with valid JSON, no markdown, no code fences:
       </button>
 
       {showHelpBubble && (
-        <div
+        <div className="helpbox"
           style={{
             position: 'fixed', bottom: 80, right: 20, width: 310, maxWidth: 'calc(100vw - 40px)',
             background: CARD, borderRadius: 14, padding: 18, boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
